@@ -1,0 +1,55 @@
+# ==============================================================================
+# .gitignore for STSW-L9961BMS
+# Excludes ST proprietary code that cannot be publicly redistributed (SLA0104)
+# Users must obtain these separately from st.com
+# ==============================================================================
+
+# --- ST Proprietary (SLA0104 / restricted redistribution) ---
+Middlewares/
+AI/
+Drivers/STM32G0xx_HAL_Driver/
+Drivers/CMSIS/
+
+# --- Pre-built binaries ---
+Bin/
+
+# --- IDE-specific build artifacts ---
+STM32CubeIDE/Debug/
+STM32CubeIDE/Release/
+STM32CubeIDE/STSW-L9961BMS_DemoAI/
+STM32CubeIDE/STSW-L9961BMS_Demo1/
+STM32CubeIDE/STSW-L9961BMS_Demo2/
+STM32CubeIDE/STSW-L9961BMS_Demo3/
+STM32CubeIDE/STSW-L9961BMS_Demo4/
+STM32CubeIDE/.settings/
+EWARM/Debug/
+EWARM/Release/
+EWARM/settings/
+MDK-ARM/Objects/
+MDK-ARM/Listings/
+.metadata/
+
+# --- Build outputs ---
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+*.list
+*.su
+
+# --- OS / Editor junk ---
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# --- Python ---
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
