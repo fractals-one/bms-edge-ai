@@ -83,15 +83,17 @@ STSW-L9961BMS/
 ├── Core/                         # Application source code
 │   ├── Inc/                      # Header files (+ app_bms_demo_ai.h)
 │   └── Src/                      # Source files (+ app_bms_demo_ai.c, app_bms_demo_ai_v2.c)
-├── Documentation/                # All documentation (NEW location)
+├── docs/                         # Documentation and assets
 │   ├── AI_BMS_Demo_Overview.pptx # Executive presentation (9 slides)
 │   ├── AI_CHANGES_LOG.md         # Code changes log
 │   ├── AI_INTEGRATION_GUIDE.md   # Integration guide
 │   ├── STSW-L9961BMS_Database.md # This file
-│   ├── generate_ppt.py           # PPT generation script
 │   ├── board_photo.jpg           # Actual STEVAL-L99615C board photo
-│   ├── pyprobe_exp.ipynb         # AI model training notebook
 │   └── STSW-L9961BMS.chm        # Original ST CHM documentation
+├── python/                       # Python scripts and ML notebooks
+│   ├── generate_ppt.py           # PPT generation script
+│   ├── clean_pptx.py             # PPTX metadata sanitizer
+│   └── pyprobe_exp.ipynb         # AI model training notebook
 ├── Drivers/                      # Hardware drivers
 │   ├── BSP/                      # Board Support Package
 │   │   ├── Components/l9961/     # L9961 driver
@@ -675,14 +677,14 @@ The model was trained using **real-world battery cycling data**:
 | `app_bms_demo_ai.h` | `Core/Inc/` | AI demo header with AI_Result_t struct |
 | `app_bms_demo_ai.c` | `Core/Src/` | AI demo implementation v1 |
 | `app_bms_demo_ai_v2.c` | `Core/Src/` | AI demo v2 — enhanced VT100 UI, Tab & CSV modes, moving average, saturation |
-| `AI_INTEGRATION_GUIDE.md` | `Documentation/` | Complete integration instructions |
-| `AI_CHANGES_LOG.md` | `Documentation/` | Code changes log |
-| `STSW-L9961BMS_Database.md` | `Documentation/` | This file — complete project database |
+| `AI_INTEGRATION_GUIDE.md` | `docs/` | Complete integration instructions |
+| `AI_CHANGES_LOG.md` | `docs/` | Code changes log |
+| `STSW-L9961BMS_Database.md` | `docs/` | This file — complete project database |
 | `STSW-L9961BMS_DemoAI.launch` | `STM32CubeIDE/` | Debug launch config for AI demo |
-| `generate_ppt.py` | `Documentation/` | Executive presentation generator |
-| `AI_BMS_Demo_Overview.pptx` | `Documentation/` | Generated 9-slide executive presentation |
-| `board_photo.jpg` | `Documentation/` | Actual STEVAL-L99615C board photograph |
-| `pyprobe_exp.ipynb` | `Documentation/` | Jupyter notebook for AI model training |
+| `generate_ppt.py` | `python/` | Executive presentation generator |
+| `AI_BMS_Demo_Overview.pptx` | `docs/` | Generated 9-slide executive presentation |
+| `board_photo.jpg` | `docs/` | Actual STEVAL-L99615C board photograph |
+| `pyprobe_exp.ipynb` | `python/` | Jupyter notebook for AI model training |
 
 ### Files to Copy from CubeAI
 
@@ -735,7 +737,7 @@ The project uses a common API pattern (`APP_BMS_Init`, `APP_BMS_Start`, `APP_BMS
 
 ### Executive Presentation
 
-A 9-slide executive-grade presentation is generated via `Documentation/generate_ppt.py`:
+A 9-slide executive-grade presentation is generated via `python/generate_ppt.py`:
 
 | Slide | Title |
 |-------|-------|

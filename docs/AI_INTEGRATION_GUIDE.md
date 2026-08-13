@@ -21,7 +21,7 @@ This guide explains how to integrate the ST Edge AI neural network for SoC/SoH e
 
 The neural network was trained using real-world battery cycling data:
 
-1. **Data Processing** (`Documentation/pyprobe_exp.ipynb`)
+1. **Data Processing** (`python/pyprobe_exp.ipynb`)
    - Raw CSV from battery cycler → PyProBE library
    - Column mapping, Parquet conversion, SOC/SOH computation
    - Export labelled CSV for training
@@ -119,15 +119,17 @@ stsw-l9961bms/
 │   ├── .project                     # MODIFIED - linked resources added
 │   ├── .cproject                    # MODIFIED - DemoAI build config added
 │   └── STSW-L9961BMS_DemoAI.launch  # NEW FILE
-├── Documentation/                   # ALL DOCS MOVED HERE
+├── docs/                            # Documentation and assets
 │   ├── AI_BMS_Demo_Overview.pptx    # Generated executive presentation (9 slides)
 │   ├── AI_CHANGES_LOG.md            # Code changes log
 │   ├── AI_INTEGRATION_GUIDE.md      # This file
 │   ├── STSW-L9961BMS_Database.md    # Complete project database
-│   ├── generate_ppt.py              # PPT generation script
 │   ├── board_photo.jpg              # Actual STEVAL-L99615C board photo
-│   ├── pyprobe_exp.ipynb            # AI model training notebook
 │   └── STSW-L9961BMS.chm           # Original ST documentation
+├── python/                          # Python scripts and ML notebooks
+│   ├── generate_ppt.py              # PPT generation script
+│   ├── clean_pptx.py                # PPTX metadata sanitizer
+│   └── pyprobe_exp.ipynb            # AI model training notebook
 └── ... (existing folders)
 ```
 
@@ -308,7 +310,7 @@ float SoH = output[1];
 
 A 9-slide executive-grade presentation is auto-generated:
 ```
-cd Documentation
+cd python
 python generate_ppt.py
 ```
 

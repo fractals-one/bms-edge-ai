@@ -2,11 +2,12 @@
   ******************************************************************************
   * @file    app_bms_demo_ai.c
   * @author  SRA.SLDU.SC Team + AI Integration
-  * @date    2026-08-04
-  * @version 1.0.0
+  * @date    2026-08-13
+  * @version 1.2.0
   * @brief   STSW-L9961BMS Application Demo AI: Voltage, Current and 
   *          Temperature (V_C_T) acquisition with AI-based SoC/SoH estimation.
-  *          Based on app_bms_demo1.c with ST Edge AI neural network integration.
+  *          Per-cell SoC for all 5 cells, pack SoC (min/max by current direction),
+  *          NTC temperature conversion. Based on app_bms_demo1.c with ST Edge AI.
   ******************************************************************************
   * @attention
   *
@@ -163,18 +164,95 @@ APP_BMS_Handle_t AppBmsHandle = {
   },
 };
 
-/* AI Result storage */
-static AI_Result_t AI_LastResult = {0};
+/* AI Result storage — per-cell and pack */
+static AI_Result_t AI_CellResult[L9961_CELL_NUM] = {0};
+static float AI_CellSoC[L9961_CELL_NUM] = {0};
+static float AI_CellSoH[L9961_CELL_NUM] = {0};
+static float AI_PackSoC = 0.0f;
+static float AI_PackSoH = 0.0f;
+static AI_Result_t AI_LastResult = {0}; /* kept for backward compat (Cell1) */
 static uint8_t AI_Initialized = 0;
 
-/* AI Moving Average Filter */
+/* AI Moving Average Filter — per-cell */
 #define AI_MA_FILTER_SIZE  10
-static float AI_SoC_Buffer[AI_MA_FILTER_SIZE] = {0};
-static float AI_SoH_Buffer[AI_MA_FILTER_SIZE] = {0};
+static float AI_SoC_Buffer[L9961_CELL_NUM][AI_MA_FILTER_SIZE] = {0};
+static float AI_SoH_Buffer[L9961_CELL_NUM][AI_MA_FILTER_SIZE] = {0};
 static uint8_t AI_MA_Index = 0;
 static uint8_t AI_MA_Count = 0;
-static float AI_SoC_Avg = 0.0f;
-static float AI_SoH_Avg = 0.0f;
+static float AI_SoC_Avg[L9961_CELL_NUM] = {0};
+static float AI_SoH_Avg[L9961_CELL_NUM] = {0};
+static float AI_PackSoC_Avg = 0.0f;
+static float AI_PackSoH_Avg = 0.0f;
+
+/*--- NTC mV to °C lookup table (10k NTC, B=3950, VREG=3300mV) ---*/
+/* Voltage divider: VREG -- R_pullup(10k) -- NTC_pin -- NTC(10k@25°C) -- GND */
+/* V_ntc = VREG * R_ntc / (R_pullup + R_ntc)                                  */
+typedef struct { int16_t mV; int16_t degC_x10; } NTC_LUT_Entry_t;
+static const NTC_LUT_Entry_t NTC_LUT[] = {
+  {  127, 1250 },  /* 125.0 °C */
+  {  154, 1200 },
+  {  187, 1150 },
+  {  228, 1100 },
+  {  277, 1050 },
+  {  336, 1000 },
+  {  407,  950 },
+  {  491,  900 },
+  {  590,  850 },
+  {  705,  800 },
+  {  836,  750 },
+  {  982,  700 },
+  { 1141,  650 },
+  { 1310,  600 },
+  { 1485,  550 },
+  { 1650,  500 },  /* 50.0 °C */
+  { 1800,  450 },
+  { 1932,  400 },
+  { 2046,  350 },
+  { 2143,  300 },
+  { 2226,  250 },  /* 25.0 °C (R_ntc = 10k, V = 1650 mV nominal) */
+  { 2297,  200 },
+  { 2358,  150 },
+  { 2411,  100 },
+  { 2457,   50 },
+  { 2496,    0 },  /*  0.0 °C */
+  { 2530,  -50 },
+  { 2559,  -100 },
+  { 2584,  -150 },
+  { 2606,  -200 },
+  { 2625,  -250 },
+  { 2641,  -300 },
+  { 2656,  -350 },
+  { 2668,  -400 },  /* -40.0 °C */
+};
+#define NTC_LUT_SIZE  (sizeof(NTC_LUT) / sizeof(NTC_LUT[0]))
+
+/**
+  * @brief  Convert NTC voltage (mV) to temperature (°C x10)
+  *         Uses linear interpolation between LUT entries.
+  * @retval Temperature in 0.1°C units (e.g. 253 = 25.3°C)
+  */
+static int16_t NTC_mV_to_degC_x10(int32_t ntc_mV)
+{
+  /* Below lowest voltage → hottest entry */
+  if (ntc_mV <= NTC_LUT[0].mV)
+    return NTC_LUT[0].degC_x10;
+  /* Above highest voltage → coldest entry */
+  if (ntc_mV >= NTC_LUT[NTC_LUT_SIZE - 1].mV)
+    return NTC_LUT[NTC_LUT_SIZE - 1].degC_x10;
+
+  /* Find bracketing entries and interpolate */
+  for (uint32_t i = 0; i < NTC_LUT_SIZE - 1; i++)
+  {
+    if (ntc_mV >= NTC_LUT[i].mV && ntc_mV <= NTC_LUT[i + 1].mV)
+    {
+      int32_t dV = NTC_LUT[i + 1].mV - NTC_LUT[i].mV;
+      int32_t dT = NTC_LUT[i + 1].degC_x10 - NTC_LUT[i].degC_x10;
+      int32_t offset = ntc_mV - NTC_LUT[i].mV;
+      return (int16_t)(NTC_LUT[i].degC_x10 + (offset * dT) / dV);
+    }
+  }
+  return 250; /* fallback: 25.0°C */
+}
 
 /* External AI variables */
 extern stai_ptr stai_input[];
@@ -193,28 +271,58 @@ static float AI_Saturate(float value)
 /**
   * @brief  Update moving average filter for SoC and SoH
   */
-static void AI_UpdateMovingAverage(float soc, float soh)
+static void AI_UpdateMovingAverage(uint8_t cell_idx, float soc, float soh)
 {
   /* Saturate raw values */
   soc = AI_Saturate(soc);
   soh = AI_Saturate(soh);
 
-  /* Store in circular buffer */
-  AI_SoC_Buffer[AI_MA_Index] = soc;
-  AI_SoH_Buffer[AI_MA_Index] = soh;
+  /* Store in per-cell circular buffer */
+  AI_SoC_Buffer[cell_idx][AI_MA_Index] = soc;
+  AI_SoH_Buffer[cell_idx][AI_MA_Index] = soh;
+}
+
+/**
+  * @brief  Advance MA index after all cells updated, recompute averages & pack SoC
+  */
+static void AI_FinalizeMovingAverage(int32_t current_mA)
+{
   AI_MA_Index = (AI_MA_Index + 1) % AI_MA_FILTER_SIZE;
   if (AI_MA_Count < AI_MA_FILTER_SIZE) AI_MA_Count++;
 
-  /* Compute average over available samples */
-  float soc_sum = 0.0f;
-  float soh_sum = 0.0f;
-  for (uint8_t i = 0; i < AI_MA_Count; i++)
+  /* Compute per-cell averages */
+  for (uint8_t c = 0; c < L9961_CELL_NUM; c++)
   {
-    soc_sum += AI_SoC_Buffer[i];
-    soh_sum += AI_SoH_Buffer[i];
+    float soc_sum = 0.0f, soh_sum = 0.0f;
+    for (uint8_t i = 0; i < AI_MA_Count; i++)
+    {
+      soc_sum += AI_SoC_Buffer[c][i];
+      soh_sum += AI_SoH_Buffer[c][i];
+    }
+    AI_SoC_Avg[c] = soc_sum / (float)AI_MA_Count;
+    AI_SoH_Avg[c] = soh_sum / (float)AI_MA_Count;
   }
-  AI_SoC_Avg = soc_sum / (float)AI_MA_Count;
-  AI_SoH_Avg = soh_sum / (float)AI_MA_Count;
+
+  /* Pack SoC: min(cells) while discharging, max(cells) while charging */
+  /* Default to min if current direction is unknown (0 mA)             */
+  uint8_t use_max = (current_mA > 0) ? 1 : 0;  /* positive = charging */
+  float pack_soc = AI_SoC_Avg[0];
+  float pack_soh = AI_SoH_Avg[0];
+  for (uint8_t c = 1; c < L9961_CELL_NUM; c++)
+  {
+    if (use_max)
+    {
+      if (AI_SoC_Avg[c] > pack_soc) pack_soc = AI_SoC_Avg[c];
+      if (AI_SoH_Avg[c] > pack_soh) pack_soh = AI_SoH_Avg[c];
+    }
+    else
+    {
+      if (AI_SoC_Avg[c] < pack_soc) pack_soc = AI_SoC_Avg[c];
+      if (AI_SoH_Avg[c] < pack_soh) pack_soh = AI_SoH_Avg[c];
+    }
+  }
+  AI_PackSoC_Avg = pack_soc;
+  AI_PackSoH_Avg = pack_soh;
 }
 
 /**
@@ -259,7 +367,7 @@ void AI_Init(void)
     STM32CubeAI_Studio_AI_Init();
     AI_Initialized = 1;
     ComTx_Printf("\r\n[AI] Neural network initialized\r\n");
-    ComTx_Printf("[AI] Model: %s, Input: 3 (V,I,T), Output: 2 (SoC,SoH)\r\n", STAI_NETWORK_MODEL_NAME);
+    ComTx_Printf("[AI] Model: %s, Input: 3 (V,I,T), Output: 2 (SoC,SoH), Cells: %d\r\n", STAI_NETWORK_MODEL_NAME, L9961_CELL_NUM);
   }
 }
 
@@ -541,15 +649,46 @@ static void APP_BMS_Demo_Task(void)
     /*=======================================================================*/
     if (AI_Initialized)
     {
-      /* Convert raw measurements to float values for AI input */
-      float voltage_V = (float)AppBmsHandle.Data.VCellMeas[0] / 1000.0f;  /* mV to V */
-      float current_mA = (float)AppBmsHandle.Data.CCCurInstMeas;          /* already in mA */
-      float temperature_C = (float)AppBmsHandle.Data.DieTempMeas;         /* already in C */
-      
-      AI_RunInference(voltage_V, current_mA, temperature_C, &AI_LastResult);
-      if (AI_LastResult.Valid)
+      /* Convert NTC voltage to temperature */
+      int16_t ntc_degC_x10 = NTC_mV_to_degC_x10(AppBmsHandle.Data.NTCMeas);
+      float temperature_C = (float)ntc_degC_x10 / 10.0f;
+      float current_mA = (float)AppBmsHandle.Data.CCCurInstMeas;
+
+      /* Run inference for ALL 5 cells */
+      uint8_t any_valid = 0;
+      for (uint8_t c = 0; c < L9961_CELL_NUM; c++)
       {
-        AI_UpdateMovingAverage(AI_LastResult.SoC, AI_LastResult.SoH);
+        float voltage_V = (float)AppBmsHandle.Data.VCellMeas[c] / 1000.0f;
+        AI_RunInference(voltage_V, current_mA, temperature_C, &AI_CellResult[c]);
+        if (AI_CellResult[c].Valid)
+        {
+          AI_CellSoC[c] = AI_Saturate(AI_CellResult[c].SoC);
+          AI_CellSoH[c] = AI_Saturate(AI_CellResult[c].SoH);
+          AI_UpdateMovingAverage(c, AI_CellSoC[c], AI_CellSoH[c]);
+          any_valid = 1;
+        }
+      }
+      /* Keep backward compat: AI_LastResult = Cell1 */
+      AI_LastResult = AI_CellResult[0];
+
+      /* Compute pack SoC (min/max based on current direction) */
+      if (any_valid)
+      {
+        /* Raw pack SoC: min while discharging, max while charging */
+        uint8_t use_max = (AppBmsHandle.Data.CCCurInstMeas > 0) ? 1 : 0;
+        AI_PackSoC = AI_CellSoC[0];
+        AI_PackSoH = AI_CellSoH[0];
+        for (uint8_t c = 1; c < L9961_CELL_NUM; c++)
+        {
+          if (use_max) {
+            if (AI_CellSoC[c] > AI_PackSoC) AI_PackSoC = AI_CellSoC[c];
+            if (AI_CellSoH[c] > AI_PackSoH) AI_PackSoH = AI_CellSoH[c];
+          } else {
+            if (AI_CellSoC[c] < AI_PackSoC) AI_PackSoC = AI_CellSoC[c];
+            if (AI_CellSoH[c] < AI_PackSoH) AI_PackSoH = AI_CellSoH[c];
+          }
+        }
+        AI_FinalizeMovingAverage(AppBmsHandle.Data.CCCurInstMeas);
       }
     }
     /*=======================================================================*/
@@ -752,12 +891,17 @@ static void APP_BMS_Demo_Log_Tab_Header(void)
   ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_RED, VT100_COLOR_BG_WHITE, VT100_MAP_NONE, " VBatt(mV) ");
   ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_RED, VT100_COLOR_BG_BLUE , VT100_MAP_NONE, " Curr(mA) ");
   ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_RED, VT100_COLOR_BG_WHITE, VT100_MAP_NONE, " NTC(mV) ");
-  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_RED, VT100_COLOR_BG_BLUE , VT100_MAP_NONE, "DTemp(C) ");
-  /* AI columns */
-  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_GREEN, VT100_MAP_NONE, "AI SoC(%) ");
-  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN , VT100_MAP_NONE, "AI SoH(%) ");
-  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_GREEN, VT100_MAP_NONE, "AvgSoC(%) ");
-  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN , VT100_MAP_NONE, "AvgSoH(%) ");
+  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_RED, VT100_COLOR_BG_BLUE , VT100_MAP_NONE, "NTC(C) ");
+  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_RED, VT100_COLOR_BG_WHITE, VT100_MAP_NONE, "DTemp(C) ");
+  /* AI per-cell SoC columns */
+  for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
+  {
+    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_GREEN, VT100_MAP_NONE, "SoC_C%d ", i+1);
+  }
+  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_YELLOW, VT100_MAP_NONE, "PackSoC ");
+  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN  , VT100_MAP_NONE, "PackSoH ");
+  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_YELLOW, VT100_MAP_NONE, "AvgPSoC ");
+  ComTx_VT100_RawFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN  , VT100_MAP_NONE, "AvgPSoH ");
 
   ComTx_VT100_RestoreDiplayAttr();
   ComTx("     \r\n");
@@ -790,28 +934,40 @@ static void APP_BMS_Demo_Log_Tab(void)
   ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_BLACK, VT100_MAP_NONE, "   %5d   "       , AppBmsHandle.Data.VBMeas);
   ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_BLUE , VT100_MAP_NONE, "  %5d   "       , AppBmsHandle.Data.CCCurInstMeas);
   ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_BLACK, VT100_MAP_NONE, "  %4d   "       , AppBmsHandle.Data.NTCMeas);
-  ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_GREEN, VT100_MAP_NONE, "  %4d   "       , AppBmsHandle.Data.DieTempMeas);
-  /* AI Results */
   {
-    int32_t soc_int = (int32_t)AI_LastResult.SoC;
-    int32_t soc_frac = (int32_t)((AI_LastResult.SoC - soc_int) * 100);
-    if (soc_frac < 0) soc_frac = -soc_frac;
-    int32_t soh_int = (int32_t)AI_LastResult.SoH;
-    int32_t soh_frac = (int32_t)((AI_LastResult.SoH - soh_int) * 100);
-    if (soh_frac < 0) soh_frac = -soh_frac;
-    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_GREEN, VT100_MAP_NONE, " %3d.%02d  "      , soc_int, soc_frac);
-    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN , VT100_MAP_NONE, " %3d.%02d  "      , soh_int, soh_frac);
+    int16_t ntc_t = NTC_mV_to_degC_x10(AppBmsHandle.Data.NTCMeas);
+    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_BLUE, VT100_MAP_NONE, " %3d.%d "       , ntc_t / 10, (ntc_t % 10 < 0) ? -(ntc_t % 10) : ntc_t % 10);
   }
-  /* AI Averaged Results */
+  ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_BLACK, VT100_MAP_NONE, "  %4d   "       , AppBmsHandle.Data.DieTempMeas);
+  /* AI per-cell SoC */
+  for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
   {
-    int32_t asoc_int = (int32_t)AI_SoC_Avg;
-    int32_t asoc_frac = (int32_t)((AI_SoC_Avg - asoc_int) * 100);
+    int32_t soc_int = (int32_t)AI_CellSoC[i];
+    int32_t soc_frac = (int32_t)((AI_CellSoC[i] - soc_int) * 100);
+    if (soc_frac < 0) soc_frac = -soc_frac;
+    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_GREEN, VT100_MAP_NONE, " %3d.%02d "      , soc_int, soc_frac);
+  }
+  /* Pack SoC/SoH */
+  {
+    int32_t psoc_int = (int32_t)AI_PackSoC;
+    int32_t psoc_frac = (int32_t)((AI_PackSoC - psoc_int) * 100);
+    if (psoc_frac < 0) psoc_frac = -psoc_frac;
+    int32_t psoh_int = (int32_t)AI_PackSoH;
+    int32_t psoh_frac = (int32_t)((AI_PackSoH - psoh_int) * 100);
+    if (psoh_frac < 0) psoh_frac = -psoh_frac;
+    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_YELLOW, VT100_MAP_NONE, " %3d.%02d "      , psoc_int, psoc_frac);
+    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN , VT100_MAP_NONE, " %3d.%02d "      , psoh_int, psoh_frac);
+  }
+  /* Averaged Pack SoC/SoH */
+  {
+    int32_t asoc_int = (int32_t)AI_PackSoC_Avg;
+    int32_t asoc_frac = (int32_t)((AI_PackSoC_Avg - asoc_int) * 100);
     if (asoc_frac < 0) asoc_frac = -asoc_frac;
-    int32_t asoh_int = (int32_t)AI_SoH_Avg;
-    int32_t asoh_frac = (int32_t)((AI_SoH_Avg - asoh_int) * 100);
+    int32_t asoh_int = (int32_t)AI_PackSoH_Avg;
+    int32_t asoh_frac = (int32_t)((AI_PackSoH_Avg - asoh_int) * 100);
     if (asoh_frac < 0) asoh_frac = -asoh_frac;
-    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_GREEN, VT100_MAP_NONE, " %3d.%02d  "      , asoc_int, asoc_frac);
-    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN , VT100_MAP_NONE, " %3d.%02d  "      , asoh_int, asoh_frac);
+    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_YELLOW, VT100_MAP_NONE, " %3d.%02d "      , asoc_int, asoc_frac);
+    ComTx_VT100_PrintfFull(-1, -1, VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_CYAN , VT100_MAP_NONE, " %3d.%02d "      , asoh_int, asoh_frac);
   }
   ComTx_VT100_RestoreDiplayAttr();
   ComTx("     \r\n");
@@ -843,11 +999,16 @@ static void APP_BMS_Demo_Log_CSV_Header(void)
   ComTx_Printf("VBMea (mV),");
   ComTx_Printf("Current (mA),");
   ComTx_Printf("NTC (mV),");
+  ComTx_Printf("NTC (degC),");
   ComTx_Printf("DieTemp (degC),");
-  ComTx_Printf("AI_SoC (%%),");
-  ComTx_Printf("AI_SoH (%%),");
-  ComTx_Printf("Avg_SoC (%%),");
-  ComTx_Printf("Avg_SoH (%%),");
+  for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
+  {
+    ComTx_Printf("AI_SoC_C%d (%%),", i + 1);
+  }
+  ComTx_Printf("Pack_SoC (%%),");
+  ComTx_Printf("Pack_SoH (%%),");
+  ComTx_Printf("Avg_Pack_SoC (%%),");
+  ComTx_Printf("Avg_Pack_SoH (%%),");
   ComTx_Printf("AI_Valid");
   ComTx_VT100_RestoreDiplayAttr();
   ComTx_Printf("\r\n");
@@ -875,30 +1036,42 @@ static void APP_BMS_Demo_Log_CSV(void)
   ComTx_Printf("%d,", AppBmsHandle.Data.VBMeas);
   ComTx_Printf("%d,", AppBmsHandle.Data.CCCurInstMeas);
   ComTx_Printf("%d,", AppBmsHandle.Data.NTCMeas);
-  ComTx_Printf("%d,", AppBmsHandle.Data.DieTempMeas);
-  /* AI Results */
   {
-    int32_t soc_int = (int32_t)AI_LastResult.SoC;
-    int32_t soc_frac = (int32_t)((AI_LastResult.SoC - soc_int) * 100);
-    if (soc_frac < 0) soc_frac = -soc_frac;
-    int32_t soh_int = (int32_t)AI_LastResult.SoH;
-    int32_t soh_frac = (int32_t)((AI_LastResult.SoH - soh_int) * 100);
-    if (soh_frac < 0) soh_frac = -soh_frac;
-    ComTx_Printf("%d.%02d,", soc_int, soc_frac);
-    ComTx_Printf("%d.%02d,", soh_int, soh_frac);
+    int16_t ntc_t = NTC_mV_to_degC_x10(AppBmsHandle.Data.NTCMeas);
+    ComTx_Printf("%d.%d,", ntc_t / 10, (ntc_t % 10 < 0) ? -(ntc_t % 10) : ntc_t % 10);
   }
-  /* AI Averaged Results */
+  ComTx_Printf("%d,", AppBmsHandle.Data.DieTempMeas);
+  /* AI per-cell SoC */
+  for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
   {
-    int32_t asoc_int = (int32_t)AI_SoC_Avg;
-    int32_t asoc_frac = (int32_t)((AI_SoC_Avg - asoc_int) * 100);
+    int32_t soc_int = (int32_t)AI_CellSoC[i];
+    int32_t soc_frac = (int32_t)((AI_CellSoC[i] - soc_int) * 100);
+    if (soc_frac < 0) soc_frac = -soc_frac;
+    ComTx_Printf("%d.%02d,", soc_int, soc_frac);
+  }
+  /* Pack SoC/SoH */
+  {
+    int32_t psoc_int = (int32_t)AI_PackSoC;
+    int32_t psoc_frac = (int32_t)((AI_PackSoC - psoc_int) * 100);
+    if (psoc_frac < 0) psoc_frac = -psoc_frac;
+    int32_t psoh_int = (int32_t)AI_PackSoH;
+    int32_t psoh_frac = (int32_t)((AI_PackSoH - psoh_int) * 100);
+    if (psoh_frac < 0) psoh_frac = -psoh_frac;
+    ComTx_Printf("%d.%02d,", psoc_int, psoc_frac);
+    ComTx_Printf("%d.%02d,", psoh_int, psoh_frac);
+  }
+  /* Averaged Pack SoC/SoH */
+  {
+    int32_t asoc_int = (int32_t)AI_PackSoC_Avg;
+    int32_t asoc_frac = (int32_t)((AI_PackSoC_Avg - asoc_int) * 100);
     if (asoc_frac < 0) asoc_frac = -asoc_frac;
-    int32_t asoh_int = (int32_t)AI_SoH_Avg;
-    int32_t asoh_frac = (int32_t)((AI_SoH_Avg - asoh_int) * 100);
+    int32_t asoh_int = (int32_t)AI_PackSoH_Avg;
+    int32_t asoh_frac = (int32_t)((AI_PackSoH_Avg - asoh_int) * 100);
     if (asoh_frac < 0) asoh_frac = -asoh_frac;
     ComTx_Printf("%d.%02d,", asoc_int, asoc_frac);
     ComTx_Printf("%d.%02d,", asoh_int, asoh_frac);
   }
-  ComTx_Printf("%d", AI_LastResult.Valid);
+  ComTx_Printf("%d", AI_CellResult[0].Valid);
   ComTx_Printf("\r\n");
 }
 
@@ -946,15 +1119,21 @@ static void APP_BMS_Demo_UI_Header(void)
   ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"SumMea     (mV):");
   ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Current    (mA):");
   ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"NTC        (mV):");
+  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"NTC      (degC):");
   ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"DieTemp  (degC):");
 
-  /* print labels for AI data */
+  /* print labels for per-cell AI data */
   ComTx_VT100_SetDiplayAttr(VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_GREEN, -1);
-  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI SoC       (%):");
-  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI SoH       (%):");
+  for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
+  {
+    ComTx_VT100_PrintfFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI SoC C%d  (%%):", i + 1);
+  }
+  ComTx_VT100_SetDiplayAttr(VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_YELLOW, -1);
+  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Pack SoC     (%):");
+  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Pack SoH     (%):");
   ComTx_VT100_SetDiplayAttr(VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_CYAN, -1);
-  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Avg SoC      (%):");
-  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Avg SoH      (%):");
+  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Avg PackSoC  (%):");
+  ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Avg PackSoH  (%)");
   
   /* print footer */
   ComTx_VT100_RestoreDiplayAttr();
@@ -1012,26 +1191,41 @@ static void APP_BMS_Demo_UI(void)
   ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_CYAN,-1,VT100_MAP_COL,"%d", AppBmsHandle.Data.CCCurInstMeas);
   ComTx_VT100_RestoreDiplayAttr();
   ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_YELLOW,-1,VT100_MAP_COL,"%d", AppBmsHandle.Data.NTCMeas);
+  {
+    int16_t ntc_t = NTC_mV_to_degC_x10(AppBmsHandle.Data.NTCMeas);
+    int32_t ntc_int = ntc_t / 10;
+    int32_t ntc_frac = ntc_t % 10;
+    if (ntc_frac < 0) ntc_frac = -ntc_frac;
+    ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_YELLOW,-1,VT100_MAP_COL,"%d.%d", ntc_int, ntc_frac);
+  }
   ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_YELLOW,-1,VT100_MAP_COL,"%d", AppBmsHandle.Data.DieTempMeas);
 
-  /* print AI raw data */
+  /* print per-cell AI SoC */
+  for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
   {
-    int32_t soc_int = (int32_t)AI_LastResult.SoC;
-    int32_t soc_frac = (int32_t)((AI_LastResult.SoC - soc_int) * 100);
+    int32_t soc_int = (int32_t)AI_CellSoC[i];
+    int32_t soc_frac = (int32_t)((AI_CellSoC[i] - soc_int) * 100);
     if (soc_frac < 0) soc_frac = -soc_frac;
-    int32_t soh_int = (int32_t)AI_LastResult.SoH;
-    int32_t soh_frac = (int32_t)((AI_LastResult.SoH - soh_int) * 100);
-    if (soh_frac < 0) soh_frac = -soh_frac;
     ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_GREEN,-1,VT100_MAP_COL,"%d.%02d", soc_int, soc_frac);
-    ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_GREEN,-1,VT100_MAP_COL,"%d.%02d", soh_int, soh_frac);
   }
-  /* print AI averaged data */
+  /* print pack SoC/SoH (raw) */
   {
-    int32_t asoc_int = (int32_t)AI_SoC_Avg;
-    int32_t asoc_frac = (int32_t)((AI_SoC_Avg - asoc_int) * 100);
+    int32_t psoc_int = (int32_t)AI_PackSoC;
+    int32_t psoc_frac = (int32_t)((AI_PackSoC - psoc_int) * 100);
+    if (psoc_frac < 0) psoc_frac = -psoc_frac;
+    int32_t psoh_int = (int32_t)AI_PackSoH;
+    int32_t psoh_frac = (int32_t)((AI_PackSoH - psoh_int) * 100);
+    if (psoh_frac < 0) psoh_frac = -psoh_frac;
+    ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_YELLOW,-1,VT100_MAP_COL,"%d.%02d", psoc_int, psoc_frac);
+    ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_YELLOW,-1,VT100_MAP_COL,"%d.%02d", psoh_int, psoh_frac);
+  }
+  /* print averaged pack SoC/SoH */
+  {
+    int32_t asoc_int = (int32_t)AI_PackSoC_Avg;
+    int32_t asoc_frac = (int32_t)((AI_PackSoC_Avg - asoc_int) * 100);
     if (asoc_frac < 0) asoc_frac = -asoc_frac;
-    int32_t asoh_int = (int32_t)AI_SoH_Avg;
-    int32_t asoh_frac = (int32_t)((AI_SoH_Avg - asoh_int) * 100);
+    int32_t asoh_int = (int32_t)AI_PackSoH_Avg;
+    int32_t asoh_frac = (int32_t)((AI_PackSoH_Avg - asoh_int) * 100);
     if (asoh_frac < 0) asoh_frac = -asoh_frac;
     ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_CYAN,-1,VT100_MAP_COL,"%d.%02d", asoc_int, asoc_frac);
     ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_CYAN,-1,VT100_MAP_COL,"%d.%02d", asoh_int, asoh_frac);

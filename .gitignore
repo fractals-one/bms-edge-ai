@@ -5,29 +5,29 @@
 # ==============================================================================
 
 # --- ST Proprietary (SLA0104 / restricted redistribution) ---
-Middlewares/
-AI/
-Drivers/STM32G0xx_HAL_Driver/
-Drivers/CMSIS/
+firmware/Middlewares/
+firmware/AI/
+firmware/Drivers/STM32G0xx_HAL_Driver/
+firmware/Drivers/CMSIS/
 
 # --- Pre-built binaries ---
-Bin/
+firmware/Bin/
 
 # --- IDE-specific build artifacts ---
-STM32CubeIDE/Debug/
-STM32CubeIDE/Release/
-STM32CubeIDE/STSW-L9961BMS_DemoAI/
-STM32CubeIDE/STSW-L9961BMS_Demo1/
-STM32CubeIDE/STSW-L9961BMS_Demo2/
-STM32CubeIDE/STSW-L9961BMS_Demo3/
-STM32CubeIDE/STSW-L9961BMS_Demo4/
-STM32CubeIDE/.settings/
-EWARM/Debug/
-EWARM/Release/
-EWARM/settings/
-MDK-ARM/Objects/
-MDK-ARM/Listings/
-.metadata/
+firmware/STM32CubeIDE/Debug/
+firmware/STM32CubeIDE/Release/
+firmware/STM32CubeIDE/STSW-L9961BMS_DemoAI/
+firmware/STM32CubeIDE/STSW-L9961BMS_Demo1/
+firmware/STM32CubeIDE/STSW-L9961BMS_Demo2/
+firmware/STM32CubeIDE/STSW-L9961BMS_Demo3/
+firmware/STM32CubeIDE/STSW-L9961BMS_Demo4/
+firmware/STM32CubeIDE/.settings/
+firmware/EWARM/Debug/
+firmware/EWARM/Release/
+firmware/EWARM/settings/
+firmware/MDK-ARM/Objects/
+firmware/MDK-ARM/Listings/
+firmware/.metadata/
 
 # --- Build outputs ---
 *.o

@@ -13,6 +13,7 @@ from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.enum.shapes import MSO_SHAPE
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DOCS_DIR = os.path.join(os.path.dirname(BASE_DIR), "docs")
 
 # ─────────────────────────── colour palette ───────────────────────────
 BG_DARK    = RGBColor(0x0F, 0x17, 0x2A)
@@ -207,7 +208,7 @@ txb(s, 0.6, 0.85, 10, 0.35,
 def get_board_image():
     """Load actual board photo from local file (any common extension)."""
     for ext in ("png", "jpg", "jpeg", "bmp", "webp"):
-        p = os.path.join(BASE_DIR, f"board_photo.{ext}")
+        p = os.path.join(DOCS_DIR, f"board_photo.{ext}")
         if os.path.exists(p):
             return p
     return None
@@ -919,7 +920,7 @@ prs.core_properties.last_modified_by = ""
 prs.core_properties.revision = 1
 prs.core_properties.version = ""
 
-output_path = os.path.join(BASE_DIR, "AI_BMS_Demo_Overview.pptx")
+output_path = os.path.join(DOCS_DIR, "AI_BMS_Demo_Overview.pptx")
 prs.save(output_path)
 
 # ─── Strip ALL private/confidential data from PPTX internals ───

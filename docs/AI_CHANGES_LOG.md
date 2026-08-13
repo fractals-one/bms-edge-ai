@@ -328,19 +328,19 @@ These are **new** files, not modifications to existing ones:
 | `Core/Src/app_bms_demo_ai.c` | AI demo implementation v1 — implements `APP_BMS_Init/Start/Task` with AI inference |
 | `Core/Src/app_bms_demo_ai_v2.c` | AI demo implementation v2 — enhanced VT100 UI, Tab & CSV output modes, moving average filter, saturation |
 | `STM32CubeIDE/STSW-L9961BMS_DemoAI.launch` | Debug launch configuration for AI demo |
-| `Documentation/AI_INTEGRATION_GUIDE.md` | Step-by-step integration instructions |
-| `Documentation/AI_CHANGES_LOG.md` | This file — code changes log |
-| `Documentation/STSW-L9961BMS_Database.md` | Complete project database/reference |
-| `Documentation/generate_ppt.py` | Python script to generate the executive PPT |
-| `Documentation/AI_BMS_Demo_Overview.pptx` | Generated 9-slide executive presentation |
-| `Documentation/board_photo.jpg` | Actual STEVAL-L99615C board photograph |
-| `Documentation/pyprobe_exp.ipynb` | Jupyter notebook for AI model training |
+| `docs/AI_INTEGRATION_GUIDE.md` | Step-by-step integration instructions |
+| `docs/AI_CHANGES_LOG.md` | This file — code changes log |
+| `docs/STSW-L9961BMS_Database.md` | Complete project database/reference |
+| `python/generate_ppt.py` | Python script to generate the executive PPT |
+| `docs/AI_BMS_Demo_Overview.pptx` | Generated 9-slide executive presentation |
+| `docs/board_photo.jpg` | Actual STEVAL-L99615C board photograph |
+| `python/pyprobe_exp.ipynb` | Jupyter notebook for AI model training |
 
 ---
 
 ## 6. AI Model Training Pipeline (`pyprobe_exp.ipynb`)
 
-**Location:** `Documentation/pyprobe_exp.ipynb`
+**Location:** `python/pyprobe_exp.ipynb`
 **Purpose:** Train the neural network model from raw battery cycler data and export to TFLite.
 
 ### Data Processing (PyProBE)
@@ -435,7 +435,7 @@ AI_RunInference() → writes stai_input, calls aiRun(), reads stai_output
 
 **Date:** August 11, 2026
 
-All documentation files moved from project root to `Documentation/` folder:
+All documentation files moved from project root to `docs/` folder:
 - `AI_CHANGES_LOG.md`
 - `AI_INTEGRATION_GUIDE.md`
 - `STSW-L9961BMS_Database.md`
@@ -449,8 +449,8 @@ All documentation files moved from project root to `Documentation/` folder:
 
 ## 10. Executive Presentation (`generate_ppt.py`)
 
-**Location:** `Documentation/generate_ppt.py`
-**Output:** `Documentation/AI_BMS_Demo_Overview.pptx` (9 slides)
+**Location:** `python/generate_ppt.py`
+**Output:** `docs/AI_BMS_Demo_Overview.pptx` (9 slides)
 
 ### Slide Deck
 | Slide | Title |
@@ -484,4 +484,4 @@ To undo the AI integration:
 4. **`AI/App/bsp_ai.h`**: Remove `extern UART_HandleTypeDef huart2;` and `#define UartHandle huart2`
 5. **`AI/App/app_x-cube-ai.c`**: Re-add `static` to `stai_input[]` and `stai_output[]`
 6. Delete `Core/Src/app_bms_demo_ai.c`, `Core/Src/app_bms_demo_ai_v2.c`, `Core/Inc/app_bms_demo_ai.h`
-7. Delete `Documentation/` folder contents (optional — documentation only)
+7. Delete `docs/` and `python/` folder contents (optional — documentation only)

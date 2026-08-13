@@ -113,5 +113,6 @@ def clean_pptx(filepath):
 if __name__ == "__main__":
     target = sys.argv[1] if len(sys.argv) > 1 else "AI_BMS_Demo_Overview.pptx"
     if not os.path.isabs(target):
-        target = os.path.join(os.path.dirname(os.path.abspath(__file__)), target)
+        docs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "docs")
+        target = os.path.join(docs_dir, target)
     clean_pptx(target)
