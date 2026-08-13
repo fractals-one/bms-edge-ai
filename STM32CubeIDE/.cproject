@@ -100,7 +100,7 @@
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.989230996.135072554" name="STSW-L9961BMS_Demo3.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo3.launch" toolsToInvoke=""/>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.989230996.801873901" name="STSW-L9961BMS_Demo1.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo1.launch" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Application/Core/app_bms_demo_ai_v2.c|Application/Core/app_bms_demo4.c|Application/Core/app_bms_demo_ai.c|STSW-L9961BMS_Demo4.launch|STSW-L9961BMS_DemoAI.launch|Utilities/BatteryStatesEstimation|Doc/readme_demo3.txt|Application/Core/app_bms_demo3.c|STSW-L9961BMS_Demo3.launch|STSW-L9961BMS_Demo2.launch|Doc/readme_demo2.txt|Application/Core/app_bms_demo2.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Application/Core/app_bms_demo4.c|Application/Core/app_bms_demo_ai.c|STSW-L9961BMS_Demo4.launch|STSW-L9961BMS_DemoAI.launch|Utilities/BatteryStatesEstimation|Doc/readme_demo3.txt|Application/Core/app_bms_demo3.c|STSW-L9961BMS_Demo3.launch|STSW-L9961BMS_Demo2.launch|Doc/readme_demo2.txt|Application/Core/app_bms_demo2.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -195,7 +195,7 @@
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.1108895724.480513977" name="STSW-L9961BMS_Demo1.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo1.launch" toolsToInvoke=""/>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.1108895724.2136373539" name="STSW-L9961BMS_Demo3.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo3.launch" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Application/Core/app_bms_demo_ai_v2.c|Application/Core/app_bms_demo_ai.c|Application/Core/app_bms_demo4.c|STSW-L9961BMS_Demo4.launch|Utilities/BatteryStatesEstimation|Doc/readme_demo3.txt|Application/Core/app_bms_demo3.c|STSW-L9961BMS_Demo3.launch|STSW-L9961BMS_Demo1.launch|Doc/readme_demo1.txt|Application/Core/app_bms_demo1.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Application/Core/app_bms_demo_ai.c|Application/Core/app_bms_demo4.c|STSW-L9961BMS_Demo4.launch|Utilities/BatteryStatesEstimation|Doc/readme_demo3.txt|Application/Core/app_bms_demo3.c|STSW-L9961BMS_Demo3.launch|STSW-L9961BMS_Demo1.launch|Doc/readme_demo1.txt|Application/Core/app_bms_demo1.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -291,7 +291,7 @@
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.1108895724.1344096913.STSW-L9961BMS_Demo1.launch" name="STSW-L9961BMS_Demo1.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo1.launch" toolsToInvoke=""/>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.1108895724.1344096913.1192799007" name="STSW-L9961BMS_Demo3.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo3.launch" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Application/Core/app_bms_demo_ai_v2.c|Application/Core/app_bms_demo_ai.c|Utilities/BatteryStatesEstimation|STSW-L9961BMS_Demo4.launch|Application/Core/app_bms_demo4.c|Doc/readme_demo2.txt|Application/Core/app_bms_demo2.c|STSW-L9961BMS_Demo2.launch|STSW-L9961BMS_Demo1.launch|Doc/readme_demo1.txt|Application/Core/app_bms_demo1.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Application/Core/app_bms_demo_ai.c|Utilities/BatteryStatesEstimation|STSW-L9961BMS_Demo4.launch|Application/Core/app_bms_demo4.c|Doc/readme_demo2.txt|Application/Core/app_bms_demo2.c|STSW-L9961BMS_Demo2.launch|STSW-L9961BMS_Demo1.launch|Doc/readme_demo1.txt|Application/Core/app_bms_demo1.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -387,7 +387,7 @@
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.1108895724.1344096913.1179156795.STSW-L9961BMS_Demo1.launch" name="STSW-L9961BMS_Demo1.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo1.launch" toolsToInvoke=""/>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.1108895724.1344096913.1179156795.STSW-L9961BMS_Demo3.launch" name="STSW-L9961BMS_Demo3.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo3.launch" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Application/Core/app_bms_demo_ai_v2.c|Application/Core/app_bms_demo_ai.c|STSW-L9961BMS_Demo3.launch|Application/Core/app_bms_demo3.c|Doc/readme_demo2.txt|Application/Core/app_bms_demo2.c|STSW-L9961BMS_Demo2.launch|STSW-L9961BMS_Demo1.launch|Doc/readme_demo1.txt|Application/Core/app_bms_demo1.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Application/Core/app_bms_demo_ai.c|STSW-L9961BMS_Demo3.launch|Application/Core/app_bms_demo3.c|Doc/readme_demo2.txt|Application/Core/app_bms_demo2.c|STSW-L9961BMS_Demo2.launch|STSW-L9961BMS_Demo1.launch|Doc/readme_demo1.txt|Application/Core/app_bms_demo1.c|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -416,7 +416,7 @@
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.defaults.DemoAI" name="Defaults" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.defaults" useByScannerDiscovery="false" value="com.st.stm32cube.ide.common.services.build.inputs.revA.1.0.6 || Debug || true || Executable || com.st.stm32cube.ide.mcu.gnu.managedbuild.option.toolchain.value.workspace || NUCLEO-G071RB || 0 || 0 || arm-none-eabi- || ${gnu_tools_for_stm32_compiler_path} || ../Core/Inc | ../Drivers/STM32G0xx_HAL_Driver/Inc | ../Drivers/STM32G0xx_HAL_Driver/Inc/Legacy | ../Drivers/CMSIS/Device/ST/STM32G0xx/Include | ../Drivers/CMSIS/Include ||  ||  || USE_HAL_DRIVER | STM32G071xx ||  || Drivers | Core/Startup | Core ||  ||  || ${workspace_loc:/${ProjName}/STM32G071RBTX_FLASH.ld} || true || NonSecure ||  || secure_nsclib.o ||  || None ||  ||  || " valueType="string"/>
 							<option id="com.st.stm32cube.ide.mcu.debug.option.cpuclock.DemoAI" name="Cpu clock frequence" superClass="com.st.stm32cube.ide.mcu.debug.option.cpuclock" useByScannerDiscovery="false" value="16" valueType="string"/>
 							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoprintffloat.DemoAI" name="Use float with printf from newlib-nano (-u _printf_float)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.nanoprintffloat" useByScannerDiscovery="false" value="true" valueType="boolean"/>
-							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.converthex.1589139667" name="Convert to Intel Hex file (-O ihex)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.converthex" value="true" valueType="boolean"/>
+							<option id="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.converthex.1589139667" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.option.converthex" value="true" valueType="boolean"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.DemoAI" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
 							<builder buildPath="${workspace_loc:/L9961-EVAL}/Debug" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder.DemoAI" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder"/>
 							<tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.DemoAI" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler">
@@ -494,7 +494,7 @@
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.DemoAI.Demo1.launch" name="STSW-L9961BMS_Demo1.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo1.launch" toolsToInvoke=""/>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1961219650.DemoAI.Demo3.launch" name="STSW-L9961BMS_Demo3.launch" rcbsApplicability="disable" resourcePath="STSW-L9961BMS_Demo3.launch" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="Application/Core/app_bms_demo_ai.c|Application/Core/app_bms_demo1.c|Application/Core/app_bms_demo2.c|Application/Core/app_bms_demo3.c|Application/Core/app_bms_demo4.c|STSW-L9961BMS_Demo1.launch|STSW-L9961BMS_Demo2.launch|STSW-L9961BMS_Demo3.launch|STSW-L9961BMS_Demo4.launch|Utilities/BatteryStatesEstimation|Doc/readme_demo1.txt|Doc/readme_demo2.txt|Doc/readme_demo3.txt|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Application/Core/app_bms_demo1.c|Application/Core/app_bms_demo2.c|Application/Core/app_bms_demo3.c|Application/Core/app_bms_demo4.c|STSW-L9961BMS_Demo1.launch|STSW-L9961BMS_Demo2.launch|STSW-L9961BMS_Demo3.launch|STSW-L9961BMS_Demo4.launch|Utilities/BatteryStatesEstimation|Doc/readme_demo1.txt|Doc/readme_demo2.txt|Doc/readme_demo3.txt|Core/Startup/startup_stm32g071rbtx.s" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

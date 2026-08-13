@@ -43,10 +43,9 @@ extern "C" {
 /** @defgroup APP_BMS_COMMON_Exported_Defines Exported Defines
   * @{
   */
-#define PACKAGE_VERSION              "1.0.0"                            /**<Global package version                    */
-#define PACKAGE_DATE                 "August 9th, 2026"               /**<Global package date                       */
-//#define PACKAGE_COPYRIGHT            "Copyright (C) 2026 STMicroelectronics"
-#define PACKAGE_COPYRIGHT            "Copyright (C) 2026"
+#define PACKAGE_VERSION              "1.0.0"                            /**<Global package version                    */ 
+#define PACKAGE_DATE                 "August 9th, 2026"               /**<Global package date                       */ 
+#define PACKAGE_COPYRIGHT            "Copyright (C) 2026"  
 
 #define DATAREADY_OK                 1                                  /**<DataReady ok condition                    */ 
 #define DATAREADY_NOT_OK             0                                  /**<DataReady not ok condition                */ 

@@ -36,6 +36,121 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>AI/App</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>AI/Network</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>AI/Middleware</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>AI/App/app_x-cube-ai.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/app_x-cube-ai.c</locationURI>
+		</link>
+		<link>
+			<name>AI/App/app_x-cube-ai.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/app_x-cube-ai.h</locationURI>
+		</link>
+		<link>
+			<name>AI/App/app_config.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/app_config.h</locationURI>
+		</link>
+		<link>
+			<name>AI/App/user_init.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/user_init.c</locationURI>
+		</link>
+		<link>
+			<name>AI/App/user_init.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/user_init.h</locationURI>
+		</link>
+		<link>
+			<name>AI/App/network_weights.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/network_weights.c</locationURI>
+		</link>
+		<link>
+			<name>AI/App/network_weights.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/network_weights.h</locationURI>
+		</link>
+		<link>
+			<name>AI/App/bsp_ai.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/App/bsp_ai.h</locationURI>
+		</link>
+		<link>
+			<name>AI/Network/network.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network.c</locationURI>
+		</link>
+		<link>
+			<name>AI/Network/network.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network.h</locationURI>
+		</link>
+		<link>
+			<name>AI/Network/network_data.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network_data.c</locationURI>
+		</link>
+		<link>
+			<name>AI/Network/network_data.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network_data.h</locationURI>
+		</link>
+		<link>
+			<name>AI/Network/network_details.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network_details.h</locationURI>
+		</link>
+		<link>
+			<name>AI/Middleware/aiTestUtility.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/aiTestUtility.c</locationURI>
+		</link>
+		<link>
+			<name>AI/Middleware/aiTestHelper_ST_AI.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/aiTestHelper_ST_AI.c</locationURI>
+		</link>
+		<link>
+			<name>AI/Middleware/ai_device_adaptor.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/ai_device_adaptor.c</locationURI>
+		</link>
+		<link>
+			<name>AI/Middleware/lc_print.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/lc_print.c</locationURI>
+		</link>
+		<link>
+			<name>AI/Middleware/syscalls.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/syscalls.c</locationURI>
+		</link>
+		<link>
+			<name>Application/Core/app_bms_demo_ai.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_bms_demo_ai.c</locationURI>
+		</link>
+		<link>
+			<name>Application/Core/app_bms_demo_ai_v2.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_bms_demo_ai_v2.c</locationURI>
+		</link>
+		<link>
 			<name>Doc</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -52,21 +167,6 @@
 		</link>
 		<link>
 			<name>Utilities</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>AI/App</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>AI/Middleware</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>AI/Network</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -111,96 +211,6 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>AI/App/app_config.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/app_config.h</locationURI>
-		</link>
-		<link>
-			<name>AI/App/app_x-cube-ai.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/app_x-cube-ai.c</locationURI>
-		</link>
-		<link>
-			<name>AI/App/app_x-cube-ai.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/app_x-cube-ai.h</locationURI>
-		</link>
-		<link>
-			<name>AI/App/bsp_ai.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/bsp_ai.h</locationURI>
-		</link>
-		<link>
-			<name>AI/App/network_weights.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/network_weights.c</locationURI>
-		</link>
-		<link>
-			<name>AI/App/network_weights.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/network_weights.h</locationURI>
-		</link>
-		<link>
-			<name>AI/App/user_init.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/user_init.c</locationURI>
-		</link>
-		<link>
-			<name>AI/App/user_init.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/App/user_init.h</locationURI>
-		</link>
-		<link>
-			<name>AI/Middleware/aiTestHelper_ST_AI.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/aiTestHelper_ST_AI.c</locationURI>
-		</link>
-		<link>
-			<name>AI/Middleware/aiTestUtility.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/aiTestUtility.c</locationURI>
-		</link>
-		<link>
-			<name>AI/Middleware/ai_device_adaptor.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/ai_device_adaptor.c</locationURI>
-		</link>
-		<link>
-			<name>AI/Middleware/lc_print.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/lc_print.c</locationURI>
-		</link>
-		<link>
-			<name>AI/Middleware/syscalls.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/AI/Misc/Src/syscalls.c</locationURI>
-		</link>
-		<link>
-			<name>AI/Network/network.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network.c</locationURI>
-		</link>
-		<link>
-			<name>AI/Network/network.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network.h</locationURI>
-		</link>
-		<link>
-			<name>AI/Network/network_data.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network_data.c</locationURI>
-		</link>
-		<link>
-			<name>AI/Network/network_data.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network_data.h</locationURI>
-		</link>
-		<link>
-			<name>AI/Network/network_details.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/AI/Network/network_details.h</locationURI>
-		</link>
-		<link>
 			<name>Application/Core/app_bms_com.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_bms_com.c</locationURI>
@@ -224,16 +234,6 @@
 			<name>Application/Core/app_bms_demo4.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_bms_demo4.c</locationURI>
-		</link>
-		<link>
-			<name>Application/Core/app_bms_demo_ai.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Core/Src/app_bms_demo_ai.c</locationURI>
-		</link>
-		<link>
-			<name>Application/Core/app_bms_demo_ai_v2.c</name>
-			<type>1</type>
-			<location>C:/Users/ramanujan/Documents/BMS_AI/stsw-l9961bms_integrated/stsw-l9961bms/Core/Src/app_bms_demo_ai_v2.c</location>
 		</link>
 		<link>
 			<name>Application/Core/app_bms_utils.c</name>
