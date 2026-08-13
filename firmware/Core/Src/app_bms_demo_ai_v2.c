@@ -649,6 +649,8 @@ static void APP_BMS_Demo_Task(void)
     /*=======================================================================*/
     if (AI_Initialized)
     {
+      /*MS added this to override current value as there is no current source*/
+      //AppBmsHandle.Data.CCCurInstMeas = -100;
       /* Convert NTC voltage to temperature */
       int16_t ntc_degC_x10 = NTC_mV_to_degC_x10(AppBmsHandle.Data.NTCMeas);
       float temperature_C = (float)ntc_degC_x10 / 10.0f;
@@ -688,7 +690,8 @@ static void APP_BMS_Demo_Task(void)
             if (AI_CellSoH[c] < AI_PackSoH) AI_PackSoH = AI_CellSoH[c];
           }
         }
-        AI_FinalizeMovingAverage(AppBmsHandle.Data.CCCurInstMeas);
+        //AI_FinalizeMovingAverage(AppBmsHandle.Data.CCCurInstMeas);
+        AI_FinalizeMovingAverage(2000);
       }
     }
     /*=======================================================================*/
@@ -1136,7 +1139,7 @@ static void APP_BMS_Demo_UI_Header(void)
   ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Avg PackSoH  (%)");
   
   /* print footer */
-  ComTx_VT100_RestoreDiplayAttr();
+  //ComTx_VT100_RestoreDiplayAttr();
   ComTx_VT100_RawFull(row++,col,-1, VT100_COLOR_FG_WHITE, VT100_COLOR_BG_BLUE,VT100_MAP_COL, "  " APP_BMS_FWHEADER_COPYRIGHT "  ");
 }
 
