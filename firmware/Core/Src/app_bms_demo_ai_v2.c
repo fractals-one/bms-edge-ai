@@ -690,8 +690,7 @@ static void APP_BMS_Demo_Task(void)
             if (AI_CellSoH[c] < AI_PackSoH) AI_PackSoH = AI_CellSoH[c];
           }
         }
-        //AI_FinalizeMovingAverage(AppBmsHandle.Data.CCCurInstMeas);
-        AI_FinalizeMovingAverage(2000);
+        AI_FinalizeMovingAverage(AppBmsHandle.Data.CCCurInstMeas);
       }
     }
     /*=======================================================================*/
