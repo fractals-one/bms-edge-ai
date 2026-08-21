@@ -11,6 +11,16 @@
   VERSION HISTORY
 ================================================================================
 
+  Version 1.2.1 (2026-08-21)
+  ---------------------------
+  [NEW] Add a moving average for cell voltage, current and temperature
+  [NEW] Perform a saturation of SOC and SOH
+  [NEW] Comment the average SOC and SOH in tera term display and all output places
+  [CHG] Comment the averaging of SOC and SOH values in tera term display and all output places
+  [CHG] update the display values from readback value to averaged value
+  [CHG] PACKAGE_VERSION updated to "1.2.1"
+
+
   Version 1.2.0 (2026-08-13)
   ---------------------------
   [NEW] AI inference runs on ALL 5 cell voltages (was Cell 1 only)
