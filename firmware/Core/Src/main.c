@@ -6,6 +6,11 @@
   * @date    2023-12-01
   * @version 1.3.0
   * @brief   Main program body
+  * @trained model specs
+  *  		Voltage value as Volt and not mV
+  * 		Current value as Ampers and not mA (Note: '-' is discharging and '+' is charging)
+  * 		Temperature as deg Celcius
+  *
   ******************************************************************************
   * @attention
   *

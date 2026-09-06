@@ -2,12 +2,17 @@
   ******************************************************************************
   * @file    app_bms_demo_ai.c
   * @author  SRA.SLDU.SC Team + AI Integration
-  * @date    2026-08-13
-  * @version 1.2.1
+  * @date    2026-09-06
+  * @version 1.2.2
   * @brief   STSW-L9961BMS Application Demo AI: Voltage, Current and 
   *          Temperature (V_C_T) acquisition with AI-based SoC/SoH estimation.
   *          Per-cell SoC for all 5 cells, pack SoC (min/max by current direction),
   *          NTC temperature conversion. Based on app_bms_demo1.c with ST Edge AI.
+  * @trained model specs
+  *  		Voltage value as Volt and not mV
+  * 		Current value as Ampers and not mA (Note: '-' is discharging and '+' is charging)
+  * 		Temperature as deg Celcius
+  *
   ******************************************************************************
   * @attention
   *
@@ -713,7 +718,14 @@ static void APP_BMS_Demo_Task(void)
       //uint8_t any_valid = 0;
       for (uint8_t c = 0; c < L9961_CELL_NUM; c++)
       {
-        AI_RunInference(sensor_avg_vals.AI_CellVolt_Avg[c], sensor_avg_vals.AI_Curr_Avg, sensor_avg_vals.AI_Temp_Avg, &AI_CellResult[c]);
+    	  /* AI model is trained using physical parameters as below
+    	   * Voltage value as Volt and not mV
+    	   * Current value as Ampers and not mA (Note: '-' is discharging and '+' is charging)
+    	   * Temperature as deg Celcius
+    	   * Because of this divide current physical values with 1000
+    	   * */
+    	  //AI_RunInference(3.62, 0, 25.5, &AI_CellResult[c]);//Use for debugging only and not for production code
+    	  AI_RunInference(sensor_avg_vals.AI_CellVolt_Avg[c], sensor_avg_vals.AI_Curr_Avg/1000, sensor_avg_vals.AI_Temp_Avg, &AI_CellResult[c]);
 
         if (AI_CellResult[c].Valid)
         {
