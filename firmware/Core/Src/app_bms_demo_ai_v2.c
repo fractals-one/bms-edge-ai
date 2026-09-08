@@ -173,6 +173,7 @@ APP_BMS_Handle_t AppBmsHandle = {
 static AI_Result_t AI_CellResult[L9961_CELL_NUM] = {0};
 static float AI_CellSoC[L9961_CELL_NUM] = {0};
 static float AI_CellSoH[L9961_CELL_NUM] = {0};
+static float AI_Inference_time[L9961_CELL_NUM] = {0};
 static float AI_PackSoC = 0.0f;
 static float AI_PackSoH = 0.0f;
 //static AI_Result_t AI_LastResult = {0}; /* kept for backward compat (Cell1) */
@@ -731,6 +732,7 @@ static void APP_BMS_Demo_Task(void)
         {
           AI_CellSoC[c] = AI_CellResult[c].SoC;
           AI_CellSoH[c] = AI_CellResult[c].SoH;
+          AI_Inference_time[c] = AI_CellResult[c].InferenceTime_us;
           //any_valid = 1;
         }
 
@@ -1178,9 +1180,14 @@ static void APP_BMS_Demo_UI_Header(void)
 
   /* print labels for per-cell AI data */
   ComTx_VT100_SetDiplayAttr(VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_GREEN, -1);
+  row++;
   for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
   {
-    ComTx_VT100_PrintfFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI SoC C%d  (%%):", i + 1);
+	ComTx_VT100_PrintfFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI Cell %d", i + 1);
+    ComTx_VT100_PrintfFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI SoC  (%%):", i + 1);
+    ComTx_VT100_PrintfFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI SoH  (%%):", i + 1);
+    ComTx_VT100_PrintfFull(row++,col,-1,-1,-1,VT100_MAP_COL,"AI Inf Time (mS):", i + 1);
+    row++;
   }
   ComTx_VT100_SetDiplayAttr(VT100_COLOR_ATTR_BRIGHT, VT100_COLOR_FG_YELLOW, -1);
   ComTx_VT100_RawFull(row++,col,-1,-1,-1,VT100_MAP_COL,"Pack SoC     (%):");
@@ -1266,14 +1273,23 @@ static void APP_BMS_Demo_UI(void)
     ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_YELLOW,-1,VT100_MAP_COL,"%d.%d", ntc_int, ntc_frac);
   }
   ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_YELLOW,-1,VT100_MAP_COL,"%d", AppBmsHandle.Data.DieTempMeas);
-
+  row++;
   /* print per-cell AI SoC */
   for(uint8_t i = 0; i < L9961_CELL_NUM; i++)
   {
     int32_t soc_int = (int32_t)AI_CellSoC[i];
     int32_t soc_frac = (int32_t)((AI_CellSoC[i] - soc_int) * 100);
     if (soc_frac < 0) soc_frac = -soc_frac;
+
+    int32_t soh_int = (int32_t)AI_CellSoH[i];
+    int32_t soh_frac = (int32_t)((AI_CellSoH[i] - soh_int) * 100);
+    if (soh_frac < 0) soh_frac = -soh_frac;
+    int32_t inference_time = (int32_t)(AI_Inference_time[i]/1000);
+    row++;
     ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_GREEN,-1,VT100_MAP_COL,"%d.%02d", soc_int, soc_frac);
+    ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_GREEN,-1,VT100_MAP_COL,"%d.%02d", soh_int, soh_frac);
+    ComTx_VT100_PrintfFull(row++,col,-1, VT100_COLOR_FG_GREEN,-1,VT100_MAP_COL,"%d", inference_time);
+    row++;
   }
   /* print pack SoC/SoH (raw) */
   {
