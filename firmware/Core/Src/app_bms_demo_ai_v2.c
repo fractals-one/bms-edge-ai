@@ -306,7 +306,7 @@ static AI_Result_t AI_PackEstimate(AI_Result_t *AI_CellResult)
     /* Default to min if current direction is unknown (0 mA)             */
     float pack_soc = AI_CellResult[0].SoC;
     float pack_soh = AI_CellResult[0].SoH;
-    for (uint8_t c = 1; c < L9961_CELL_NUM; c++)
+    for (uint8_t c = 0; c < L9961_CELL_NUM; c++)
     {
       if (Curr_Direction & AI_CellResult[c].Valid)
       {

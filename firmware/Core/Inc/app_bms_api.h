@@ -43,8 +43,8 @@ extern "C" {
 /** @defgroup APP_BMS_COMMON_Exported_Defines Exported Defines
   * @{
   */
-#define PACKAGE_VERSION              "1.2.3"                            /**<Global package version                    */
-#define PACKAGE_DATE                 "September 08, 2026"               /**<Global package date                       */
+#define PACKAGE_VERSION              "1.2.4"                            /**<Global package version                    */
+#define PACKAGE_DATE                 "September 10, 2026"               /**<Global package date                       */
 #define PACKAGE_COPYRIGHT            "Copyright (C) 2026"  
 
 #define DATAREADY_OK                 1                                  /**<DataReady ok condition                    */ 
