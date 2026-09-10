@@ -308,15 +308,15 @@ static AI_Result_t AI_PackEstimate(AI_Result_t *AI_CellResult)
     float pack_soh = AI_CellResult[0].SoH;
     for (uint8_t c = 0; c < L9961_CELL_NUM; c++)
     {
-      if (Curr_Direction & AI_CellResult[c].Valid)
+      if (Curr_Direction && AI_CellResult[c].Valid)
       {
         if (AI_CellResult[c].SoC > pack_soc) pack_soc = AI_CellResult[c].SoC;
         if (AI_CellResult[c].SoH > pack_soh) pack_soh = AI_CellResult[c].SoH;
       }
-      else if(AI_CellResult[c].Valid)
+      else if(!Curr_Direction && AI_CellResult[c].Valid)
       {
-        if (AI_CellResult[c].SoC < pack_soc) pack_soc = AI_CellResult[0].SoC;
-        if (AI_CellResult[c].SoH < pack_soh) pack_soh = AI_CellResult[0].SoH;
+        if (AI_CellResult[c].SoC < pack_soc) pack_soc = AI_CellResult[c].SoC;
+        if (AI_CellResult[c].SoH < pack_soh) pack_soh = AI_CellResult[c].SoH;
       }
     }
     pack_parameters.SoC = saturate(pack_soc, 0, 100);
@@ -725,7 +725,7 @@ static void APP_BMS_Demo_Task(void)
     	   * Temperature as deg Celcius
     	   * Because of this divide current physical values with 1000
     	   * */
-    	  //AI_RunInference(3.62, 0, 25.5, &AI_CellResult[c]);//Use for debugging only and not for production code
+    	  //AI_RunInference(sensor_avg_vals.AI_CellVolt_Avg[c], 10.0, 25.5, &AI_CellResult[c]);//Use for debugging only and not for production code
     	  AI_RunInference(sensor_avg_vals.AI_CellVolt_Avg[c], sensor_avg_vals.AI_Curr_Avg/1000, sensor_avg_vals.AI_Temp_Avg, &AI_CellResult[c]);
 
         if (AI_CellResult[c].Valid)
